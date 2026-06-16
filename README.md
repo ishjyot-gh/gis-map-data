@@ -4,6 +4,7 @@ This version does not require React, Vite, or modern Node.js.
 
 
 ## Adding Missing data
+* create folder data/ and then add geojson files in it
 * geojson files are not included as overall zip side was exeeding github limit of 25MB
 * copy geojson file from other repo : districts.geojson, india.geojson, states.geojson, taluks.geojson
 
