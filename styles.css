@@ -1,0 +1,21 @@
+html,
+body {
+  height: 100%;
+  margin: 0;
+}
+
+#map {
+  height: 100vh;
+  width: 100%;
+}
+
+.map-error {
+  background: #fff3cd;
+  border: 1px solid #ffe69c;
+  border-radius: 4px;
+  color: #664d03;
+  font-family: Arial, sans-serif;
+  font-size: 13px;
+  line-height: 1.4;
+  padding: 8px 10px;
+}
