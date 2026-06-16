@@ -5,10 +5,10 @@
 
 const map = L.map("map").setView([22.5, 78.9], 5);
 
-L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
-  maxZoom: 19,
-  attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-}).addTo(map);
+// L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+//   maxZoom: 19,
+//   attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+// }).addTo(map);
 
 const overlays = {};
 const layerControl = L.control.layers(null, overlays, { collapsed: false }).addTo(map);
