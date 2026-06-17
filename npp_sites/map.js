@@ -1,18 +1,13 @@
-
 window.NppSitesMap = (function () {
   function initMap(containerId) {
     const map = L.map(containerId).setView([22.5, 78.9], 5);
-
-    map.createPane("siteMarkers");
-    map.getPane("siteMarkers").style.zIndex = 650;
-
-    L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      maxZoom: 19,
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-    }).addTo(map);
-
     const overlays = {};
     const layerControl = L.control.layers(null, overlays, { collapsed: false }).addTo(map);
+    const visibleLayerNames = window.NppSitesCommon.getVisibleLayerNames();
+    const markLayersReady = window.NppSitesCommon.bindLayerStatePersistence(map, overlays);
+
+    window.NppSitesCommon.createSiteMarkerPane(map);
+    window.NppSitesCommon.addTileLayer(map);
 
     const statusControl = L.control({ position: "bottomleft" });
     statusControl.onAdd = function () {
@@ -29,152 +24,42 @@ window.NppSitesMap = (function () {
       status.style.display = "block";
     }
 
-    function popupText(properties) {
-      const name =
-        properties.NAME_3 ||
-        properties.NAME_2 ||
-        properties.NAME_1 ||
-        properties.NAME_0 ||
-        "Unknown";
-
-      const type =
-        properties.ENGTYPE_3 ||
-        properties.ENGTYPE_2 ||
-        properties.ENGTYPE_1 ||
-        "";
-
-      const parentParts = [
-        properties.NAME_2,
-        properties.NAME_1,
-        properties.NAME_0
-      ].filter(Boolean);
-
-      return `
-        <b>${name}</b><br/>
-        ${type ? `${type}<br/>` : ""}
-        ${parentParts.length ? parentParts.join(", ") : ""}
-      `;
-    }
-
-    function styleForLayer(name) {
-      const styles = {
-        India: {
-          weight: 2,
-          fillOpacity: 0.04
-        },
-        States: {
-          weight: 1.5,
-          fillOpacity: 0.08
-        },
-        Districts: {
-          weight: 1,
-          fillOpacity: 0.05
-        },
-        Taluks: {
-          weight: 0.6,
-          fillOpacity: 0.03
-        }
-      };
-
-      return styles[name] || { weight: 1, fillOpacity: 0.05 };
-    }
-
-    async function addGeoJsonLayer(name, url, checked) {
-      try {
-        const response = await fetch(url);
-
-        if (!response.ok) {
-          throw new Error(`${response.status} ${response.statusText}`);
-        }
-
-        const data = await response.json();
-
-        const layer = L.geoJSON(data, {
-          style: styleForLayer(name),
-          onEachFeature: function (feature, leafletLayer) {
-            leafletLayer.bindPopup(popupText(feature.properties || {}));
-          }
-        });
-
-        overlays[name] = layer;
-        layerControl.addOverlay(layer, name);
-
-        if (checked) {
-          layer.addTo(map);
-        }
-
-        return layer;
-      } catch (error) {
-        console.error(`Failed to load ${name}:`, error);
-        showStatus(`Failed to load ${name} from ${url}. Use Live Server or npm run start, not direct file open.`);
-        return null;
-      }
-    }
-
-    async function loadBoundaries() {
-      await addGeoJsonLayer("India", "./data/india.geojson", true);
-      await addGeoJsonLayer("States", "./data/states.geojson", true);
-      await addGeoJsonLayer("Districts", "./data/districts.geojson", false);
-      await addGeoJsonLayer("Taluks", "./data/taluks.geojson", false);
-    }
-
-    async function loadSites() {
-      const response = await fetch("./data/sites.json");
-      const sites = await response.json();
-
-      const siteLayer = L.layerGroup();
-      const siteBounds = L.latLngBounds();
-
-      sites.forEach(site => {
-        const latLng = [site.lat, site.lng];
-        const marker = L.circleMarker([site.lat, site.lng], {
-          radius: 8,
-          color: "#7f1d1d",
-          fillColor: "#ef4444",
-          fillOpacity: 0.85,
-          weight: 3,
-          pane: "siteMarkers"
-        });
-
-        marker.bindPopup(`
-          <b>${site.name}</b><br/>
-          State: ${site.state || "Not available"}<br/>
-          Reactor Type: ${site.reactor_type || "Not available"}<br/>
-          Operator: ${site.operator || "Not available"}<br/><br/>
-          <button type="button" onclick="openSiteDetails(${site.id})">
-            Details
-          </button>
-        `);
-
-        marker.addTo(siteLayer);
-        siteBounds.extend(latLng);
-      });
-
-      siteLayer.addTo(map);
-      layerControl.addOverlay(siteLayer, "NPP Sites");
-
-      if (siteBounds.isValid()) {
-        map.fitBounds(siteBounds, {
-          paddingTopLeft: [60, 60],
-          paddingBottomRight: [60, 120],
-          maxZoom: 7
-        });
-      }
-    }
-
     (async function loadMapLayers() {
-      await loadBoundaries();
-      await loadSites();
+      try {
+        const sites = await fetch("./data/sites.json").then(response => response.json());
+        const siteLayer = await window.NppSitesCommon.loadStandardLayers({
+          map,
+          layerControl,
+          overlays,
+          visibleLayerNames,
+          sites,
+          dataRoot: "./data",
+          detailHrefForSite: site => `./npp_sites/site.html?id=${site.id}`
+        });
+
+        if (siteLayer.bounds.isValid()) {
+          map.fitBounds(siteLayer.bounds, {
+            padding: [20, 20]
+          });
+        }
+
+        markLayersReady();
+      } catch (error) {
+        console.error("Failed to load map layers:", error);
+        showStatus("Failed to load map data. Use Live Server or npm run start, not direct file open.");
+      }
     })();
   }
-
-  function openSiteDetails(siteId) {
-    window.location.href = `./npp_sites/site.html?id=${siteId}`;
-  }
-
-  window.openSiteDetails = openSiteDetails;
 
   return {
     initMap
   };
 })();
+
+document.addEventListener("DOMContentLoaded", () => {
+  const mapElement = document.getElementById("map");
+
+  if (mapElement) {
+    window.NppSitesMap.initMap(mapElement.id);
+  }
+});

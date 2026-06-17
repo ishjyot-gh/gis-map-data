@@ -3,8 +3,12 @@
   "private": true,
   "version": "1.0.0",
   "description": "Pure JavaScript Leaflet GIS map without React or Vite.",
+  "_previous_scripts": {
+    "start": "python -m http.server 5173",
+    "dev": "python3 -m http.server 5173"
+  },
   "scripts": {
-    "start": "python -m http.server 5173", 
-    "dev": "python3 -m http.server 5173" 
+    "start": "node scripts/start-server.js",
+    "dev": "node scripts/start-server.js"
   }
 }

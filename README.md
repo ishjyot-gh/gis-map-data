@@ -38,10 +38,11 @@ Do not open `index.html` directly as a `file:///...` URL. The GeoJSON files are 
 
 ```text
 index.html
-app.js
 styles.css
+npp_sites/map.js
+npp_sites/site.html
+npp_sites/site_detail.js
 data/*.geojson
 lib/leaflet/*
 ```
-
 

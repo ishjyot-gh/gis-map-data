@@ -69,22 +69,9 @@ function renderSiteDetails(site) {
   });
 }
 
-async function loadLocalLayers() {
-  const states = await fetch("../data/states.geojson").then(response => response.json());
-
-  L.geoJSON(states, {
-    style: {
-      color: "#2563eb",
-      weight: 1,
-      fillOpacity: 0
-    }
-  }).addTo(siteMap);
-}
-
 async function initSitePage() {
   const siteId = getSiteIdFromUrl();
-  const response = await fetch("../data/sites.json");
-  const sites = await response.json();
+  const sites = await fetch("../data/sites.json").then(response => response.json());
   const currentSite = sites.find(site => site.id === siteId);
 
   if (!currentSite) {
@@ -100,25 +87,25 @@ async function initSitePage() {
 
   siteMap = L.map("siteMap").setView([currentSite.lat, currentSite.lng], 9);
 
-  L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
-    maxZoom: 19,
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-  }).addTo(siteMap);
+  const overlays = {};
+  const layerControl = L.control.layers(null, overlays, { collapsed: false }).addTo(siteMap);
+  const visibleLayerNames = window.NppSitesCommon.getVisibleLayerNames();
+  const markLayersReady = window.NppSitesCommon.bindLayerStatePersistence(siteMap, overlays);
 
-  L.circleMarker([currentSite.lat, currentSite.lng], {
-    radius: 9,
-    color: "#7f1d1d",
-    fillColor: "#ef4444",
-    fillOpacity: 0.8,
-    weight: 3
-  }).addTo(siteMap).bindPopup(`
-    <b>${currentSite.name}</b><br/>
-    State: ${currentSite.state || "Not available"}<br/>
-    Reactor Type: ${currentSite.reactor_type || "Not available"}<br/>
-    Operator: ${currentSite.operator || "Not available"}
-  `).openPopup();
+  window.NppSitesCommon.createSiteMarkerPane(siteMap);
+  window.NppSitesCommon.addTileLayer(siteMap);
+  await window.NppSitesCommon.loadStandardLayers({
+    map: siteMap,
+    layerControl,
+    overlays,
+    visibleLayerNames,
+    sites,
+    dataRoot: "../data",
+    selectedSiteId: currentSite.id,
+    detailHrefForSite: site => `./site.html?id=${site.id}`
+  });
 
-  await loadLocalLayers();
+  markLayersReady();
 }
 
 initSitePage();
