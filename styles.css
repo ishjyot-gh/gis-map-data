@@ -20,3 +20,38 @@ body {
   line-height: 1.4;
   padding: 8px 10px;
 }
+
+.site-layout {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+}
+
+.site-sidebar {
+  width: 330px;
+  padding: 16px;
+  background: #ffffff;
+  border-right: 1px solid #d1d5db;
+  overflow-y: auto;
+  font-family: Arial, sans-serif;
+}
+
+#siteMap {
+  flex: 1;
+  height: 100vh;
+  background: #eef3f7;
+}
+
+.site-sidebar label {
+  display: block;
+  margin-top: 10px;
+  font-weight: bold;
+}
+
+.site-sidebar input,
+.site-sidebar select,
+.site-sidebar button {
+  width: 100%;
+  margin-top: 6px;
+  padding: 8px;
+}

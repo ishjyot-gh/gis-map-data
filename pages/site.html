@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Site Details</title>
+    <link rel="stylesheet" href="../lib/leaflet/leaflet.css">
+    <link rel="stylesheet" href="../styles.css">
+</head>
+
+<body>
+
+    <div class="site-layout">
+        <div class="site-sidebar">
+            <button onclick="history.back()">← Back</button>
+            <h2 id="siteName">Site Details</h2>
+
+            <p><b>State:</b> <span id="siteState"></span></p>
+            <p><b>Zone:</b> <span id="siteZone"></span></p>
+            <p id="siteDescription"></p>
+
+            <hr>
+
+            <h3>Wind / Sector Analysis</h3>
+
+            <label>Wind Direction</label>
+            <select id="windDirection">
+                <option value="N">N</option>
+                <option value="NE">NE</option>
+                <option value="E">E</option>
+                <option value="SE">SE</option>
+                <option value="S">S</option>
+                <option value="SW">SW</option>
+                <option value="W">W</option>
+                <option value="NW">NW</option>
+            </select>
+
+            <label>Wind Speed</label>
+            <input id="windSpeed" type="number" placeholder="km/h">
+
+            <button onclick="highlightSector()">Show Affected Sector</button>
+
+            <hr>
+
+            <h3>Instruments</h3>
+            <div id="instrumentList">Pending data</div>
+
+            <h3>Survey Data</h3>
+            <div id="surveyData">Pending data</div>
+        </div>
+
+        <div id="siteMap"></div>
+    </div>
+
+    <script src="../lib/leaflet/leaflet.js"></script>
+    <script src="../js/siteDetails.js"></script>
+</body>
+
+</html>

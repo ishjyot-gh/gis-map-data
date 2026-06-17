@@ -116,3 +116,41 @@ async function addGeoJsonLayer(name, url, checked) {
   await addGeoJsonLayer("Districts", "./data/districts.geojson", false);
   await addGeoJsonLayer("Taluks", "./data/taluks.geojson", false);
 })();
+
+// load sites from dummy file
+async function loadSites() {
+  const response = await fetch("./data/sites.json");
+  const sites = await response.json();
+
+  const siteLayer = L.layerGroup();
+
+  sites.forEach(site => {
+    const marker = L.circleMarker([site.lat, site.lng], {
+      radius: 8,
+      color: "#dc2626",
+      fillColor: "#ef4444",
+      fillOpacity: 1,
+      weight: 2
+    });
+
+    marker.bindPopup(`
+      <b>${site.name}</b><br/>
+      State: ${site.state}<br/>
+      Zone: ${site.zone}<br/><br/>
+      <button onclick="openSiteDetails(${site.id})">
+        View Details
+      </button>
+    `);
+
+    marker.addTo(siteLayer);
+  });
+
+  siteLayer.addTo(map);
+  layerControl.addOverlay(siteLayer, "NPP Sites");
+}
+
+function openSiteDetails(siteId) {
+  window.location.href = `./pages/site.html?id=${siteId}`;
+}
+
+loadSites();
